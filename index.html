@@ -623,17 +623,45 @@ function convBadge(cv){
 
 // ══════ FETCH ══════
 async function refreshData(e){if(e)e.stopPropagation();await fetchData();}
+// Fetch com timeout para não travar
+async function fetchComTimeout(url, ms){
+  const controller=new AbortController();
+  const tid=setTimeout(()=>controller.abort(),ms);
+  try{
+    const r=await fetch(url,{cache:'no-cache',signal:controller.signal});
+    clearTimeout(tid);
+    if(!r.ok)throw new Error('HTTP '+r.status);
+    return await r.text();
+  }catch(e){clearTimeout(tid);throw e;}
+}
+
 async function fetchData(){
   showLoading('Carregando dados de estágio...');
   try{
-    const txt=await(await fetch(ESTAGIO_URL+'&_='+Date.now(),{cache:'no-cache'})).text();
-    rawRows=parseCSV(txt);lastLoad=new Date();
+    // 1. Dados de estágio — timeout 15s
+    let txt;
+    try{
+      txt=await fetchComTimeout(ESTAGIO_URL+'&_='+Date.now(),15000);
+    }catch(e){
+      hideLoading();
+      alert('Não foi possível carregar os dados de estágio.\nVerifique sua conexão e se a planilha está publicada.\n\nErro: '+e.message);
+      return;
+    }
+    rawRows=parseCSV(txt);
+    if(!rawRows.length){
+      hideLoading();
+      alert('A planilha de estágio foi carregada mas está vazia.\nVerifique se há dados na aba correta.');
+      return;
+    }
+    lastLoad=new Date();
+
+    // 2. Convênios — timeout 10s por aba, falha silenciosa (dash funciona sem convênios)
     setLoadMsg('Carregando convênios dos polos...');
     convenioMap={};
-    await Promise.all(CONVENIO_ABAS.map(async({polo,gid})=>{
+    const convResults=await Promise.allSettled(CONVENIO_ABAS.map(async({polo,gid})=>{
       const url=`https://docs.google.com/spreadsheets/d/e/${CONVENIO_PUB}/pub?gid=${gid}&single=true&output=csv`;
       try{
-        const t=await(await fetch(url+'&_='+Date.now(),{cache:'no-cache'})).text();
+        const t=await fetchComTimeout(url+'&_='+Date.now(),10000);
         const rows=parseCSV(t);
         const pm={};const hoje=new Date();
         rows.forEach(r=>{
@@ -644,7 +672,7 @@ async function fetchData(){
           let venceEm6m=false,vigFim='';
           const fim=(r['Fim Vigência']||'').trim();
           if(fim){
-            try{const pts=fim.split(' ')[0].split('/');const d=new Date(+pts[2],+pts[1]-1,+pts[0]);vigFim=d.toLocaleDateString('pt-BR');const dias=(d-hoje)/86400000;if(dias>0&&dias<=180)venceEm6m=true;}catch(e){}
+            try{const pts=fim.split(' ')[0].split('/');const d=new Date(+pts[2],+pts[1]-1,+pts[0]);vigFim=d.toLocaleDateString('pt-BR');const dias=(d-hoje)/86400000;if(dias>0&&dias<=180)venceEm6m=true;}catch(ex){}
           }
           if(!pm[k])pm[k]={vagas:0,restantes:0,venceEm6m:false,vigFim:'',area,curso,disc};
           pm[k].vagas+=parseInt(r['Vagas']||'0')||0;
@@ -652,18 +680,41 @@ async function fetchData(){
           if(venceEm6m){pm[k].venceEm6m=true;pm[k].vigFim=vigFim;}
         });
         convenioMap[polo]=pm;
-      }catch(e){convenioMap[polo]={};console.warn('Conv erro',polo,e.message);}
+      }catch(e){
+        convenioMap[polo]={};
+        console.warn('Convênio não carregado para',polo,'—',e.message);
+      }
     }));
+
+    // Contar falhas de convênio para avisar (sem travar)
+    const convFalhas=Object.values(convenioMap).filter(m=>Object.keys(m).length===0).length;
+    if(convFalhas===CONVENIO_ABAS.length){
+      console.warn('Todos os convênios falharam — dashboard carregará sem dados de convênio.');
+    }
+
     finishLoad();
-  }catch(err){hideLoading();alert('Erro ao carregar:\n'+err.message);}
+  }catch(err){
+    hideLoading();
+    alert('Erro inesperado ao carregar:\n'+err.message);
+  }
 }
 
 function parseCSV(txt){
   const ln=txt.split('\n').filter(l=>l.trim());if(ln.length<2)return[];
-  const hd=slv(ln[0]);
-  return ln.slice(1).map(line=>{const v=slv(line),row={};hd.forEach((h,i)=>row[h.trim()]=(v[i]||'').trim());return row;}).filter(r=>Object.values(r).some(v=>v));
+  const sep=ln[0].includes(';')?';':',';
+  const hd=slv(ln[0],sep);
+  return ln.slice(1).map(line=>{const v=slv(line,sep),row={};hd.forEach((h,i)=>row[h.trim()]=(v[i]||'').trim());return row;}).filter(r=>Object.values(r).some(v=>v));
 }
-function slv(line){const res=[];let c='',q=false;for(let i=0;i<line.length;i++){if(line[i]==='"')q=!q;else if(line[i]===','&&!q){res.push(c);c='';}else c+=line[i];}res.push(c);return res;}
+function slv(line,sep){
+  sep=sep||',';
+  const res=[];let c='',q=false;
+  for(let i=0;i<line.length;i++){
+    if(line[i]==='"')q=!q;
+    else if(line[i]===sep&&!q){res.push(c);c='';}
+    else c+=line[i];
+  }
+  res.push(c);return res;
+}
 
 // ══════ FINISH LOAD ══════
 function finishLoad(){
