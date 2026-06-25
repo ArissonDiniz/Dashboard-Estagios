@@ -185,10 +185,14 @@ select:hover,select:focus{border-color:#FFD600;box-shadow:0 0 0 3px var(--yd)}
 .cb-r{background:rgba(239,68,68,.12);color:#ef4444;border:1px solid rgba(239,68,68,.25)}
 .cb-o{background:rgba(249,115,22,.12);color:#f97316;border:1px solid rgba(249,115,22,.25)}
 /* SEMÁFORO — estilo compacto */
-.sf-polo-hdr{display:flex;align-items:center;gap:10px;padding:8px 14px;background:var(--b2);border-bottom:1px solid var(--br);position:sticky;top:66px;z-index:10}
-.sf-polo-name{font-size:12px;font-weight:800;color:#FFD600}
-.sf-polo-stats{font-size:10px;color:var(--tx3);display:flex;gap:12px}
+.sf-polo-hdr{display:flex;align-items:center;gap:12px;padding:10px 16px;background:linear-gradient(90deg,var(--b2),var(--b3));border-bottom:2px solid rgba(255,214,0,.15);border-top:1px solid var(--br)}
+.sf-polo-hdr:first-child{border-top:none}
+.sf-polo-name{font-size:12px;font-weight:800;color:#FFD600;display:flex;align-items:center;gap:6px}
+.sf-polo-pct{font-size:11px;font-weight:700;padding:2px 8px;border-radius:5px}
+.sf-polo-stats{font-size:10px;color:var(--tx3);display:flex;gap:14px;flex-wrap:wrap}
 .sf-polo-stat{display:flex;align-items:center;gap:4px}
+.sf-polo-bar{flex:1;max-width:120px;height:3px;background:var(--b5);border-radius:2px;overflow:hidden;margin-left:4px}
+.sf-polo-bar-f{height:3px;border-radius:2px;transition:width 1s cubic-bezier(.4,0,.2,1)}
 /* Linha de curso — clicável, expande disciplinas */
 .sf-curso-row{display:flex;align-items:center;gap:0;background:var(--b4);border-bottom:1px solid var(--br);transition:background .15s;position:relative}
 .sf-curso-row:hover{background:var(--b5)}
@@ -611,8 +615,8 @@ function convBadge(cv){
     return`<span class="cb cb-g">✓ Próprio${vig}</span>`;
   }
   if(cv.status==='vizinho'){
-    const nv=(cv.polo||'').replace('Rio Branco/AC - ','').replace('Porto Velho/RO - Distrito de Extrema','PVH-Extrema').replace('Porto Velho/RO','Porto Velho');
-    return`<span class="cb cb-b">📍 ${nv}</span>`;
+    // "Conv. compartilhado" — autoexplicativo, sem nome técnico do polo
+    return`<span class="cb cb-b" title="Convênio de polo próximo disponível para uso — veja detalhes em Ver alunos">✓ Conv. compartilhado</span>`;
   }
   return`<span class="cb cb-r">✗ Sem convênio</span>`;
 }
@@ -869,7 +873,7 @@ function renderKPIs(rows){
     {l:'Matrículas confirmadas',v:conf,s:'de '+total+' registros',ic:'🟢',c:'ko',b:Math.round(conf/Math.max(total,1)*100),mid:'confirmados',ml:'Confirmados por polo'},
     {l:'Críticos 🔴',v:criticos,s:'confirmados sem termo e sem convênio',ic:'🚨',c:criticos>0?'kr':'kg2c',b:null,mid:'criticos',ml:'Críticos por polo'},
     {l:'Com convênio próprio',v:comConv,s:Math.round(comConv/Math.max(total,1)*100)+'% do filtro',ic:'🤝',c:'kg2c',b:Math.round(comConv/Math.max(total,1)*100),mid:'comConv',ml:'Convênio próprio por polo'},
-    {l:'Via polo vizinho',v:vizConv,s:'convênio compartilhado',ic:'📍',c:'kb',b:null,mid:'vizConv',ml:'Via vizinho por polo'},
+    {l:'Conv. compartilhado',v:vizConv,s:'de polo próximo na mesma região',ic:'🤝',c:'kb',b:null,mid:'vizConv',ml:'Convênio compartilhado por polo'},
   ].map((k,i)=>mkKPI(k,i)).join('');
 
   document.getElementById('kg2').innerHTML=[
@@ -930,7 +934,7 @@ function renderConvSitChart(rows){
   let c=0,v=0,s=0;pend.forEach(r=>{const cv=getConvInfo(r['Nome do Polo'],r['Área do Curso'],r['Nome do Curso'],r['Nome da Disciplina']);if(cv.status==='proprio')c++;else if(cv.status==='vizinho')v++;else s++;});
   const tot=pend.length||1;
   document.getElementById('taxa-conv-cob').textContent=Math.round((c+v)/tot*100)+'%';
-  const lbls=['Conv. próprio','Conv. vizinho','Sem convênio'],vals=[c,v,s],colors=['#22c55e','#3b82f6','#ef4444'];
+  const lbls=['Conv. próprio','Conv. compartilhado','Sem convênio'],vals=[c,v,s],colors=['#22c55e','#3b82f6','#ef4444'];
   document.getElementById('leg-conv-sit').innerHTML=lbls.map((l,i)=>`<div class="leg-row"><span class="leg-label"><span class="leg-dot" style="background:${colors[i]}"></span>${l}</span><span style="display:flex;align-items:center;gap:8px"><span style="font-size:10px;color:var(--tx3)">${Math.round(vals[i]/tot*100)}%</span><span class="leg-val">${vals[i]}</span></span></div>`).join('');
   if(charts.convSit)charts.convSit.destroy();
   charts.convSit=new Chart(document.getElementById('ch-conv-sit'),{type:'doughnut',data:{labels:lbls,datasets:[{data:vals,backgroundColor:colors.map(c=>c+'cc'),borderColor:BC(),borderWidth:3}]},options:{responsive:true,maintainAspectRatio:false,cutout:'70%',plugins:{legend:{display:false},tooltip:TO()}}});
@@ -976,10 +980,11 @@ function renderSemaforo(rows){
 
     html+=`<div class="sf-polo-hdr">
       <span class="sf-polo-name">📍 ${polo}</span>
+      <span style="font-size:11px;font-weight:700;padding:2px 8px;border-radius:5px;background:${colPct}18;color:${colPct};border:1px solid ${colPct}33">${poloPct}%</span>
+      <div class="sf-polo-bar"><div class="sf-polo-bar-f" style="width:${poloPct}%;background:${colPct}"></div></div>
       <div class="sf-polo-stats">
-        <span class="sf-polo-stat"><span style="color:${colPct};font-weight:700">${poloPct}%</span> enviados</span>
         <span class="sf-polo-stat"><span style="color:var(--tx2)">${poloSim}/${poloTotal}</span> termos</span>
-        ${poloCrit>0?`<span class="sf-polo-stat"><span style="color:var(--r)">⚠️ ${poloCrit}</span> sem convênio</span>`:''}
+        ${poloCrit>0?`<span class="sf-polo-stat" style="color:var(--r)">⚠️ ${poloCrit} sem convênio</span>`:`<span class="sf-polo-stat" style="color:var(--g)">✓ todos com convênio</span>`}
       </div>
     </div>`;
 
@@ -998,7 +1003,7 @@ function renderSemaforo(rows){
         const comProprio=Object.values(C.discs).filter(d=>d.cv.status==='proprio').length;
         const comViz=Object.values(C.discs).filter(d=>d.cv.status==='vizinho').length;
         if(comProprio>0)convSummary+=`<span class="cb cb-g" style="font-size:8px">✓ ${comProprio}</span>`;
-        if(comViz>0)convSummary+=`<span class="cb cb-b" style="font-size:8px">📍 ${comViz}</span>`;
+        if(comViz>0)convSummary+=`<span class="cb cb-b" style="font-size:8px">✓ compart. ${comViz}</span>`;
 
         html+=`<div class="sf-curso-row" onclick="toggleCurso('${cid}')">
           <div class="sf-curso-toggle" id="tog-${cid}">▶</div>
@@ -1079,21 +1084,43 @@ function abrirDetalheDisc(cid,poloEnc,cursoEnc,discEnc){
   const nao=alunos.length-sim;
   const conf=alunos.filter(r=>(r['Situação do Semestre']||'').trim()==='Matrícula Confirmada').length;
 
-  // Resumo + convênio
-  const cvBadgeHtml=cv?convBadge(cv):'';
-  const resumo=`<div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px;padding:12px 14px;background:var(--b4);border-radius:10px;align-items:center">
-    <div style="flex:1;min-width:0">
-      <div style="font-size:11px;color:var(--tx3);margin-bottom:4px">Convênio nesta disciplina:</div>
-      <div style="display:flex;align-items:center;gap:6px">${cvBadgeHtml}
-      ${cv&&cv.status!=='nenhum'&&cv.info?`<span style="font-size:10px;color:var(--tx3)">${cv.info.vagas} vagas · ${cv.info.restantes} restantes${cv.info.venceEm6m?` · <strong style="color:var(--o)">⚠️ vence em breve (${cv.info.vigFim})</strong>`:''}</span>`:''}
-      ${cv&&cv.status==='nenhum'?`<span style="font-size:10px;color:var(--r)">Polo precisa buscar local de estágio para esta disciplina</span>`:''}
+  // Bloco convênio — explicação clara para o colaborador
+  let convBlock='';
+  if(cv&&cv.status==='proprio'){
+    const vigAlerta=cv.info&&cv.info.venceEm6m?`<div style="margin-top:6px;padding:5px 8px;background:rgba(249,115,22,.1);border:1px solid rgba(249,115,22,.25);border-radius:6px;font-size:10px;color:var(--o)">⚠️ Convênio vence em breve (${cv.info.vigFim}) — providencie a renovação</div>`:'';
+    convBlock=`<div style="padding:10px 14px;background:rgba(34,197,94,.06);border:1px solid rgba(34,197,94,.2);border-radius:10px;margin-bottom:14px">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">
+        <span class="cb cb-g">✓ Conv. próprio firmado</span>
+        ${cv.info?`<span style="font-size:10px;color:var(--tx3)">${cv.info.vagas} vagas cadastradas · ${cv.info.restantes} disponíveis</span>`:''}
       </div>
-    </div>
-    <div style="display:flex;gap:6px;flex-shrink:0">
-      <div style="text-align:center;padding:8px 12px;background:var(--b5);border-radius:8px"><div style="font-size:18px;font-weight:900;color:#22c55e">${sim}</div><div style="font-size:9px;color:var(--tx3)">enviados</div></div>
-      <div style="text-align:center;padding:8px 12px;background:var(--b5);border-radius:8px"><div style="font-size:18px;font-weight:900;color:#ef4444">${nao}</div><div style="font-size:9px;color:var(--tx3)">pendentes</div></div>
-      <div style="text-align:center;padding:8px 12px;background:var(--b5);border-radius:8px"><div style="font-size:18px;font-weight:900;color:#f97316">${conf}</div><div style="font-size:9px;color:var(--tx3)">confirmados</div></div>
-    </div>
+      <div style="font-size:10px;color:var(--tx3)">Este polo possui convênio para esta disciplina. Os alunos podem usar os locais cadastrados.</div>
+      ${vigAlerta}
+    </div>`;
+  }else if(cv&&cv.status==='vizinho'){
+    const poloViz=cv.polo||'polo próximo';
+    const vigAlerta=cv.info&&cv.info.venceEm6m?`<div style="margin-top:6px;padding:5px 8px;background:rgba(249,115,22,.1);border:1px solid rgba(249,115,22,.25);border-radius:6px;font-size:10px;color:var(--o)">⚠️ Convênio vence em breve (${cv.info.vigFim})</div>`:'';
+    convBlock=`<div style="padding:10px 14px;background:rgba(59,130,246,.06);border:1px solid rgba(59,130,246,.2);border-radius:10px;margin-bottom:14px">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px">
+        <span class="cb cb-b">✓ Conv. compartilhado</span>
+        ${cv.info?`<span style="font-size:10px;color:var(--tx3)">${cv.info.vagas} vagas · ${cv.info.restantes} disponíveis</span>`:''}
+      </div>
+      <div style="font-size:10px;color:var(--tx2);line-height:1.5"><strong style="color:#3b82f6">${poloViz}</strong> possui convênio para esta disciplina que pode ser utilizado por este polo. Os dois polos ficam na mesma cidade/região, portanto os alunos podem usar os locais cadastrados naquele polo.</div>
+      ${vigAlerta}
+    </div>`;
+  }else{
+    convBlock=`<div style="padding:10px 14px;background:rgba(239,68,68,.06);border:1px solid rgba(239,68,68,.2);border-radius:10px;margin-bottom:14px">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:4px">
+        <span class="cb cb-r">✗ Sem convênio firmado</span>
+      </div>
+      <div style="font-size:10px;color:var(--tx2);line-height:1.5">Este polo <strong style="color:var(--r)">não possui convênio</strong> para esta disciplina. O polo precisa buscar e firmar um convênio com uma empresa ou instituição antes que os alunos possam iniciar o estágio.</div>
+    </div>`;
+  }
+
+  const resumo=`${convBlock}<div style="display:flex;gap:6px;margin-bottom:14px">
+    <div style="flex:1;text-align:center;padding:10px;background:var(--b4);border-radius:8px"><div style="font-size:20px;font-weight:900;color:#22c55e">${sim}</div><div style="font-size:9px;color:var(--tx3);margin-top:2px">Termo enviado</div></div>
+    <div style="flex:1;text-align:center;padding:10px;background:var(--b4);border-radius:8px"><div style="font-size:20px;font-weight:900;color:#ef4444">${nao}</div><div style="font-size:9px;color:var(--tx3);margin-top:2px">Pendente</div></div>
+    <div style="flex:1;text-align:center;padding:10px;background:var(--b4);border-radius:8px"><div style="font-size:20px;font-weight:900;color:#f97316">${conf}</div><div style="font-size:9px;color:var(--tx3);margin-top:2px">Mat. confirmada</div></div>
+    <div style="flex:1;text-align:center;padding:10px;background:var(--b4);border-radius:8px"><div style="font-size:20px;font-weight:900;color:var(--tx)">${alunos.length}</div><div style="font-size:9px;color:var(--tx3);margin-top:2px">Total</div></div>
   </div>`;
 
   // Botão exportar
@@ -1218,7 +1245,7 @@ function renderRankDisc(rows){
   const max=s[0][1].total||1;
   document.getElementById('rank-disc').innerHTML=s.slice(0,10).map(([d,v],i)=>{
     const convCol=v.status==='proprio'?'#22c55e':v.status==='vizinho'?'#3b82f6':'#ef4444';
-    const convLabel=v.status==='proprio'?'✓ Conv.':v.status==='vizinho'?'📍 Viz.':'✗ S/Conv';
+    const convLabel=v.status==='proprio'?'✓ Conv.':v.status==='vizinho'?'✓ Compart.':'✗ S/Conv';
     const pctEnv=v.total>0?Math.round(v.sim/v.total*100):0;
     return`<div class="rd-item">
       <div class="rd-num">${i+1}º</div>
@@ -1396,7 +1423,7 @@ function expandChart(id,titulo,key){
   else if(key==='sit'){const c=rows.filter(r=>(r['Situação do Semestre']||'').trim()==='Matrícula Confirmada').length;window._mc=new Chart(nc,{type:'doughnut',data:{labels:['Confirmada','Aguardando'],datasets:[{data:[c,rows.length-c],backgroundColor:['#22c55ecc','#f97316cc'],borderColor:BC(),borderWidth:3}]},options:{responsive:true,maintainAspectRatio:false,cutout:'65%',plugins:{legend:{display:true,position:'bottom',labels:{color:TC(),font:{family:'Inter',size:13}}},tooltip:TO()}}});}
   else if(key==='mod'){const by={};rows.forEach(r=>{const m=(r['Módulo']||'').trim();if(!m)return;if(!by[m])by[m]={total:0,sim:0};by[m].total++;if((r['Termo de Compromisso Enviado']||'').trim()==='Sim')by[m].sim++;});const s=Object.entries(by).sort((a,b)=>+a[0]-+b[0]);window._mc=new Chart(nc,{type:'bar',data:{labels:s.map(([m])=>'Módulo '+m),datasets:[{label:'Pendente',data:s.map(([,d])=>d.total-d.sim),backgroundColor:'#ef444477',borderColor:'#ef4444',borderWidth:1,borderRadius:5,maxBarThickness:30},{label:'Enviado',data:s.map(([,d])=>d.sim),backgroundColor:'#22c55e77',borderColor:'#22c55e',borderWidth:1,borderRadius:5,maxBarThickness:30}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:true,position:'bottom',labels:{color:TC(),font:{family:'Inter',size:12},boxWidth:12,padding:14}},tooltip:TO()},scales:{x:{ticks:{color:TC(),font:{size:12,family:'Inter'}},grid:{display:false}},y:{ticks:{color:TC(),font:{size:11}},grid:{color:GC()},beginAtZero:true}}}});}
   else if(key==='convcob'){const by={};rows.forEach(r=>{const a=(r['Área do Curso']||'').trim()||'Outras';if(!by[a])by[a]={total:0,com:0};by[a].total++;if(getConvInfo(r['Nome do Polo'],r['Área do Curso'],r['Nome do Curso'],r['Nome da Disciplina']).status!=='nenhum')by[a].com++;});const s=Object.entries(by).sort((a,b)=>b[1].total-a[1].total);const pcts=s.map(([,d])=>d.total>0?Math.round(d.com/d.total*100):0);window._mc=new Chart(nc,{type:'bar',data:{labels:s.map(([a])=>AREA_SHORT[a]||a),datasets:[{label:'% com convênio',data:pcts,backgroundColor:pcts.map(p=>p>=75?'#22c55e99':p>=40?'#FFD60099':'#ef444499'),borderColor:pcts.map(p=>p>=75?'#22c55e':p>=40?'#FFD600':'#ef4444'),borderWidth:1,borderRadius:6,maxBarThickness:50}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{...TO(),callbacks:{label:ctx=>`${ctx.raw}% com convênio`}}},scales:{x:{ticks:{color:TC(),font:{size:12,family:'Inter'}},grid:{display:false}},y:{ticks:{color:TC(),font:{size:11},callback:v=>v+'%'},grid:{color:GC()},beginAtZero:true,max:100}}}});}
-  else if(key==='convSit'){const pend=rows.filter(r=>(r['Termo de Compromisso Enviado']||'').trim()!=='Sim');let c=0,v=0,s=0;pend.forEach(r=>{const cv=getConvInfo(r['Nome do Polo'],r['Área do Curso'],r['Nome do Curso'],r['Nome da Disciplina']);if(cv.status==='proprio')c++;else if(cv.status==='vizinho')v++;else s++;});window._mc=new Chart(nc,{type:'doughnut',data:{labels:['Próprio','Vizinho','Sem conv.'],datasets:[{data:[c,v,s],backgroundColor:['#22c55e','#3b82f6','#ef4444'],borderColor:BC(),borderWidth:3}]},options:{responsive:true,maintainAspectRatio:false,cutout:'65%',plugins:{legend:{display:true,position:'bottom',labels:{color:TC(),font:{family:'Inter',size:13}}},tooltip:TO()}}});}
+  else if(key==='convSit'){const pend=rows.filter(r=>(r['Termo de Compromisso Enviado']||'').trim()!=='Sim');let c=0,v=0,s=0;pend.forEach(r=>{const cv=getConvInfo(r['Nome do Polo'],r['Área do Curso'],r['Nome do Curso'],r['Nome da Disciplina']);if(cv.status==='proprio')c++;else if(cv.status==='vizinho')v++;else s++;});window._mc=new Chart(nc,{type:'doughnut',data:{labels:['Conv. próprio','Conv. compartilhado','Sem conv.'],datasets:[{data:[c,v,s],backgroundColor:['#22c55e','#3b82f6','#ef4444'],borderColor:BC(),borderWidth:3}]},options:{responsive:true,maintainAspectRatio:false,cutout:'65%',plugins:{legend:{display:true,position:'bottom',labels:{color:TC(),font:{family:'Inter',size:13}}},tooltip:TO()}}});}
   document.getElementById('modal').style.display='flex';
 }
 
