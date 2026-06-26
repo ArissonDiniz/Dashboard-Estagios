@@ -216,11 +216,10 @@ select:hover,select:focus{border-color:#FFD600;box-shadow:0 0 0 3px var(--yd)}
 .sf-curso-body.open{display:block}
 
 /* NÍVEL 3 — DISCIPLINA */
-.sf-disc-row{display:flex;align-items:center;gap:0;background:var(--b3);border-bottom:1px solid var(--br);transition:background .15s}
-.sf-disc-row:hover{background:var(--b4)}
-.sf-disc-tog{width:44px;display:flex;align-items:center;justify-content:center;font-size:10px;color:var(--tx3);flex-shrink:0;align-self:stretch;border-right:1px solid var(--br);padding-left:12px;transition:color .15s}
-.sf-disc-tog span{transition:transform .2s;display:inline-block}
-.sf-disc-tog span.open{transform:rotate(90deg)}
+.sf-disc-row{display:flex;align-items:center;gap:0;background:var(--b3);border-bottom:1px solid var(--br);border-left:2px solid transparent;transition:background .15s,border-color .15s}
+.sf-disc-row:hover{background:var(--b4);border-left-color:rgba(255,214,0,.35)}
+.sf-disc-tog{width:44px;display:flex;align-items:center;justify-content:center;font-size:14px;color:var(--tx3);flex-shrink:0;align-self:stretch;border-right:1px solid var(--br);transition:color .15s}
+.sf-disc-row:hover .sf-disc-tog{color:var(--tx2)}
 .sf-disc-info{flex:1;padding:8px 14px;min-width:0}
 .sf-disc-name{font-size:11.5px;color:var(--tx2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 [data-theme="light"] .sf-disc-name{color:#ccc}
@@ -1121,8 +1120,8 @@ function renderSemaforo(rows){
           const dcol=dpct>=100?'#22c55e':dpct>0?'#FFD600':'#ef4444';
 
           html+=`
-          <div class="sf-disc-row" onclick="sfToggle('${did}')">
-            <div class="sf-disc-tog"><span id="tog-${did}">▶</span></div>
+          <div class="sf-disc-row" onclick="event.stopPropagation();abrirDetalheDisc('${encodeURIComponent(polo)}','${encodeURIComponent(curso)}','${encodeURIComponent(disc)}')">
+            <div class="sf-disc-tog" style="font-size:12px;color:var(--tx3)">👥</div>
             <div class="sf-disc-info">
               <div class="sf-disc-name" title="${disc}">${disc||'(disciplina geral)'}</div>
               <div class="sf-disc-meta">
@@ -1135,46 +1134,9 @@ function renderSemaforo(rows){
               ${convBadge(cv)}
               <span class="sn ${D.sim>0?'sn-g':'sn-x'}">${D.sim} ✓</span>
               <span class="sn ${D.total-D.sim>0?'sn-r':'sn-x'}">${D.total-D.sim} pend.</span>
+              <span style="font-size:9px;color:var(--tx3);white-space:nowrap">ver alunos ▸</span>
             </div>
-          </div>
-          <div class="sf-disc-body" id="body-${did}">`;
-
-          // NÍVEL 4 — ALUNOS inline
-          // Bloco de convênio compacto no topo da lista de alunos
-          let convInfo='';
-          if(cv.status==='proprio'){
-            const vig=cv.info&&cv.info.venceEm6m?` <span style="color:var(--o)">⚠️ vence ${cv.info.vigFim}</span>`:'';
-            convInfo=`<div style="padding:7px 14px 7px 56px;font-size:10px;color:var(--tx3);border-bottom:1px solid var(--br);background:rgba(34,197,94,.04)">🤝 Convênio próprio firmado${cv.info?` · ${cv.info.vagas} vagas · ${cv.info.restantes} disponíveis`:''}${vig}</div>`;
-          }else if(cv.status==='vizinho'){
-            convInfo=`<div style="padding:7px 14px 7px 56px;font-size:10px;color:var(--tx3);border-bottom:1px solid var(--br);background:rgba(59,130,246,.04)">🤝 Convênio compartilhado com <strong style="color:#3b82f6">${cv.polo}</strong> — alunos podem usar os locais deste polo${cv.info?` · ${cv.info.vagas} vagas · ${cv.info.restantes} disponíveis`:''}${cv.info&&cv.info.venceEm6m?` <span style="color:var(--o)">⚠️ vence ${cv.info.vigFim}</span>`:''}</div>`;
-          }else{
-            convInfo=`<div style="padding:7px 14px 7px 56px;font-size:10px;color:var(--r);border-bottom:1px solid var(--br);background:rgba(239,68,68,.04)">⚠️ Sem convênio — polo precisa buscar local de estágio para esta disciplina</div>`;
-          }
-          html+=convInfo;
-
-          D.alunos.forEach((r,i)=>{
-            const termo=(r['Termo de Compromisso Enviado']||'').trim()==='Sim';
-            const conf=(r['Situação do Semestre']||'').trim()==='Matrícula Confirmada';
-            html+=`
-            <div class="sf-aluno-row">
-              <div class="sf-aluno-num">${i+1}</div>
-              <div class="sf-aluno-info">
-                <div class="sf-aluno-name">${r['Nome do Aluno']||'Aluno '+r['Matrícula']}</div>
-                <div class="sf-aluno-mat">Mat. ${r['Matrícula']||'—'} · Módulo ${r['Módulo']||'—'}</div>
-              </div>
-              <div class="sf-aluno-tags">
-                <span class="cb ${termo?'cb-g':'cb-r'}" style="font-size:9px">${termo?'✓ Termo enviado':'✗ Sem termo'}</span>
-                ${conf?`<span class="cb cb-o" style="font-size:9px">🎓 Confirmado</span>`:''}
-              </div>
-            </div>`;
-          });
-
-          // Botão exportar esta disciplina
-          html+=`<div style="padding:8px 14px 8px 56px;border-top:1px solid var(--br)">
-            <button onclick="event.stopPropagation();exportDiscAlunos('${encodeURIComponent(polo)}','${encodeURIComponent(curso)}','${encodeURIComponent(disc)}')" style="font-size:10px;font-weight:700;padding:5px 12px;border-radius:6px;background:rgba(255,214,0,.08);color:#FFD600;border:1px solid rgba(255,214,0,.2);font-family:Inter,sans-serif;transition:all .15s">⬇ Exportar lista desta disciplina</button>
-          </div>`;
-
-          html+=`</div>`; // fecha sf-disc-body
+          </div>`; // disciplina — clique abre modal bonito
         });
 
         html+=`</div>`; // fecha sf-curso-body
@@ -1203,7 +1165,7 @@ function toggleCurso(cid){
 }
 
 // ══════ MODAL: DETALHE DISCIPLINA ══════
-function abrirDetalheDisc(cid,poloEnc,cursoEnc,discEnc){
+function abrirDetalheDisc(poloEnc,cursoEnc,discEnc){
   const polo=decodeURIComponent(poloEnc);
   const curso=decodeURIComponent(cursoEnc);
   const disc=decodeURIComponent(discEnc);
