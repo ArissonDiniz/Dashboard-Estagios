@@ -184,37 +184,62 @@ select:hover,select:focus{border-color:#FFD600;box-shadow:0 0 0 3px var(--yd)}
 .cb-b{background:rgba(59,130,246,.12);color:#3b82f6;border:1px solid rgba(59,130,246,.25)}
 .cb-r{background:rgba(239,68,68,.12);color:#ef4444;border:1px solid rgba(239,68,68,.25)}
 .cb-o{background:rgba(249,115,22,.12);color:#f97316;border:1px solid rgba(249,115,22,.25)}
-/* SEMÁFORO — estilo compacto */
-.sf-polo-hdr{display:flex;align-items:center;gap:12px;padding:10px 16px;background:linear-gradient(90deg,var(--b2),var(--b3));border-bottom:2px solid rgba(255,214,0,.15);border-top:1px solid var(--br)}
-.sf-polo-hdr:first-child{border-top:none}
-.sf-polo-name{font-size:12px;font-weight:800;color:#FFD600;display:flex;align-items:center;gap:6px}
-.sf-polo-pct{font-size:11px;font-weight:700;padding:2px 8px;border-radius:5px}
-.sf-polo-stats{font-size:10px;color:var(--tx3);display:flex;gap:14px;flex-wrap:wrap}
-.sf-polo-stat{display:flex;align-items:center;gap:4px}
-.sf-polo-bar{flex:1;max-width:120px;height:3px;background:var(--b5);border-radius:2px;overflow:hidden;margin-left:4px}
+/* ══ SEMÁFORO ACCORDION 3 NÍVEIS ══ */
+
+/* NÍVEL 1 — POLO (header separador) */
+.sf-polo-row{display:flex;align-items:center;gap:10px;padding:10px 16px;background:linear-gradient(90deg,var(--b2),var(--b3));border-bottom:2px solid rgba(255,214,0,.12);border-top:1px solid var(--br);transition:background .15s}
+.sf-polo-row:hover{background:var(--b2)}
+.sf-polo-row:first-child{border-top:none}
+.sf-polo-tog{width:28px;height:28px;display:flex;align-items:center;justify-content:center;font-size:10px;color:var(--tx3);flex-shrink:0;transition:transform .2s}
+.sf-polo-tog.open{transform:rotate(90deg)}
+.sf-polo-name{font-size:12.5px;font-weight:800;color:#FFD600}
+.sf-polo-pct{font-size:10px;font-weight:700;padding:2px 7px;border-radius:5px;flex-shrink:0}
+.sf-polo-bar{width:80px;height:3px;background:var(--b5);border-radius:2px;overflow:hidden;flex-shrink:0}
 .sf-polo-bar-f{height:3px;border-radius:2px;transition:width 1s cubic-bezier(.4,0,.2,1)}
-/* Linha de curso — clicável, expande disciplinas */
-.sf-curso-row{display:flex;align-items:center;gap:0;background:var(--b4);border-bottom:1px solid var(--br);transition:background .15s;position:relative}
+.sf-polo-meta{font-size:10px;color:var(--tx3);display:flex;gap:12px;flex-wrap:wrap;flex:1}
+.sf-polo-body{display:none}
+.sf-polo-body.open{display:block}
+
+/* NÍVEL 2 — CURSO */
+.sf-curso-row{display:flex;align-items:center;gap:0;background:var(--b4);border-bottom:1px solid var(--br);transition:background .15s}
 .sf-curso-row:hover{background:var(--b5)}
-.sf-curso-toggle{width:36px;display:flex;align-items:center;justify-content:center;font-size:11px;color:var(--tx3);flex-shrink:0;align-self:stretch;border-right:1px solid var(--br)}
-.sf-curso-info{flex:1;padding:9px 12px;min-width:0}
+.sf-curso-tog{width:44px;display:flex;align-items:center;justify-content:center;font-size:10px;color:var(--tx3);flex-shrink:0;align-self:stretch;border-right:1px solid var(--br);transition:color .15s}
+.sf-curso-row:hover .sf-curso-tog{color:var(--tx2)}
+.sf-curso-tog span{transition:transform .2s;display:inline-block}
+.sf-curso-tog span.open{transform:rotate(90deg)}
+.sf-curso-info{flex:1;padding:9px 14px;min-width:0}
 .sf-curso-name{font-size:12px;font-weight:700;color:var(--tx);display:flex;align-items:center;gap:8px;flex-wrap:wrap}
 [data-theme="light"] .sf-curso-name{color:#f0f0f0}
-.sf-curso-meta{font-size:10px;color:var(--tx3);margin-top:2px;display:flex;gap:10px;flex-wrap:wrap}
-.sf-curso-badges{display:flex;align-items:center;gap:6px;flex-shrink:0;padding:9px 12px}
-.sf-disc-block{display:none;border-bottom:2px solid var(--br2)}
-.sf-disc-block.open{display:block}
-/* Linha de disciplina dentro do curso expandido */
-.sf-disc-row{display:flex;align-items:center;gap:0;border-bottom:1px solid var(--br);background:var(--b3);transition:background .15s}
-.sf-disc-row:last-child{border-bottom:none}
+.sf-curso-meta{font-size:10px;color:var(--tx3);margin-top:3px;display:flex;gap:12px;flex-wrap:wrap;align-items:center}
+.sf-curso-badges{display:flex;align-items:center;gap:5px;flex-shrink:0;padding:9px 14px}
+.sf-curso-body{display:none}
+.sf-curso-body.open{display:block}
+
+/* NÍVEL 3 — DISCIPLINA */
+.sf-disc-row{display:flex;align-items:center;gap:0;background:var(--b3);border-bottom:1px solid var(--br);transition:background .15s}
 .sf-disc-row:hover{background:var(--b4)}
-.sf-disc-indent{width:36px;flex-shrink:0;border-right:1px solid var(--br);align-self:stretch;display:flex;align-items:center;justify-content:center;color:var(--tx3);font-size:10px}
-.sf-disc-name{flex:1;padding:8px 12px;font-size:11.5px;color:var(--tx2);min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sf-disc-tog{width:44px;display:flex;align-items:center;justify-content:center;font-size:10px;color:var(--tx3);flex-shrink:0;align-self:stretch;border-right:1px solid var(--br);padding-left:12px;transition:color .15s}
+.sf-disc-tog span{transition:transform .2s;display:inline-block}
+.sf-disc-tog span.open{transform:rotate(90deg)}
+.sf-disc-info{flex:1;padding:8px 14px;min-width:0}
+.sf-disc-name{font-size:11.5px;color:var(--tx2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 [data-theme="light"] .sf-disc-name{color:#ccc}
-.sf-disc-stats{display:flex;align-items:center;gap:8px;padding:8px 12px;flex-shrink:0}
-.sf-disc-btn{font-size:9px;font-weight:700;padding:3px 8px;border-radius:5px;border:1px solid var(--br2);background:transparent;color:var(--tx3);font-family:'Inter',sans-serif;transition:all .15s;white-space:nowrap}
-.sf-disc-btn:hover{border-color:#FFD600;color:#FFD600;background:var(--yd)}
-.sn{display:inline-flex;align-items:center;justify-content:center;min-width:26px;padding:2px 6px;border-radius:14px;font-size:11px;font-weight:700}
+.sf-disc-meta{font-size:10px;color:var(--tx3);margin-top:2px;display:flex;gap:8px;align-items:center}
+.sf-disc-right{display:flex;align-items:center;gap:6px;padding:8px 14px;flex-shrink:0}
+.sf-disc-body{display:none;background:var(--b2);border-bottom:1px solid var(--br)}
+.sf-disc-body.open{display:block}
+
+/* NÍVEL 4 — ALUNOS inline */
+.sf-aluno-row{display:flex;align-items:center;gap:10px;padding:8px 14px 8px 56px;border-bottom:1px solid var(--br)}
+.sf-aluno-row:last-child{border-bottom:none}
+.sf-aluno-row:hover{background:rgba(255,255,255,.02)}
+.sf-aluno-num{font-size:9px;color:var(--tx3);font-weight:700;width:18px;text-align:right;flex-shrink:0}
+.sf-aluno-info{flex:1;min-width:0}
+.sf-aluno-name{font-size:12px;font-weight:600;color:var(--tx);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+[data-theme="light"] .sf-aluno-name{color:#f0f0f0}
+.sf-aluno-mat{font-size:10px;color:var(--tx3);margin-top:1px}
+.sf-aluno-tags{display:flex;align-items:center;gap:5px;flex-shrink:0}
+.sn{display:inline-flex;align-items:center;justify-content:center;min-width:22px;padding:2px 6px;border-radius:12px;font-size:10px;font-weight:700}
 .sn-g{background:rgba(34,197,94,.1);color:var(--g);border:1px solid rgba(34,197,94,.18)}
 .sn-r{background:rgba(239,68,68,.1);color:var(--r);border:1px solid rgba(239,68,68,.18)}
 .sn-o{background:rgba(249,115,22,.1);color:var(--o);border:1px solid rgba(249,115,22,.18)}
@@ -991,9 +1016,8 @@ function renderConvSitChart(rows){
   charts.convSit=new Chart(document.getElementById('ch-conv-sit'),{type:'doughnut',data:{labels:lbls,datasets:[{data:vals,backgroundColor:colors.map(c=>c+'cc'),borderColor:BC(),borderWidth:3}]},options:{responsive:true,maintainAspectRatio:false,cutout:'70%',plugins:{legend:{display:false},tooltip:TO()}}});
 }
 
-// ══════ SEMÁFORO COMPACTO INTERATIVO ══════
+// ══════ SEMÁFORO ACCORDION 3 NÍVEIS ══════
 function renderSemaforo(rows){
-  // Estrutura: polo → area → curso → {alunos:[], discs:{disc:{alunos:[],cv}}}
   const est={};
   rows.forEach(r=>{
     const polo=(r['Nome do Polo']||'').trim();
@@ -1011,7 +1035,8 @@ function renderSemaforo(rows){
     if(cv.status==='nenhum')C.semConv++;
     if(!C.discs[disc])C.discs[disc]={total:0,sim:0,conf:0,cv,alunos:[]};
     const D=C.discs[disc];
-    D.total++;if((r['Termo de Compromisso Enviado']||'').trim()==='Sim')D.sim++;
+    D.total++;
+    if((r['Termo de Compromisso Enviado']||'').trim()==='Sim')D.sim++;
     if((r['Situação do Semestre']||'').trim()==='Matrícula Confirmada')D.conf++;
     D.alunos.push(r);
   });
@@ -1019,8 +1044,8 @@ function renderSemaforo(rows){
   const poloFiltro=document.getElementById('f-polo').value;
   const polos=poloFiltro!=='TODOS'?[poloFiltro]:Object.keys(est).sort();
   let idCnt=0;
-
   let html='';
+
   polos.forEach(polo=>{
     const areas=est[polo]||{};
     const poloTotal=Object.values(areas).flatMap(cs=>Object.values(cs)).reduce((s,c)=>s+c.total,0);
@@ -1028,17 +1053,29 @@ function renderSemaforo(rows){
     const poloCrit=Object.values(areas).flatMap(cs=>Object.values(cs)).reduce((s,c)=>s+c.semConv,0);
     const poloPct=poloTotal>0?Math.round(poloSim/poloTotal*100):0;
     const colPct=poloPct>=75?'#22c55e':poloPct>=40?'#FFD600':'#ef4444';
+    const pid='p'+(idCnt++);
+    // Número total de cursos neste polo
+    const nCursos=Object.values(areas).reduce((s,cs)=>s+Object.keys(cs).length,0);
 
-    html+=`<div class="sf-polo-hdr">
+    // NÍVEL 1 — POLO (recolhido por padrão, mas se filtro de polo ativo já abre)
+    const poloAberto=poloFiltro!=='TODOS';
+    html+=`
+    <div class="sf-polo-row" onclick="sfToggle('${pid}')">
+      <div class="sf-polo-tog${poloAberto?' open':''}" id="tog-${pid}">▶</div>
       <span class="sf-polo-name">📍 ${polo}</span>
-      <span style="font-size:11px;font-weight:700;padding:2px 8px;border-radius:5px;background:${colPct}18;color:${colPct};border:1px solid ${colPct}33">${poloPct}%</span>
+      <span class="sf-polo-pct" style="background:${colPct}18;color:${colPct};border:1px solid ${colPct}33">${poloPct}%</span>
       <div class="sf-polo-bar"><div class="sf-polo-bar-f" style="width:${poloPct}%;background:${colPct}"></div></div>
-      <div class="sf-polo-stats">
-        <span class="sf-polo-stat"><span style="color:var(--tx2)">${poloSim}/${poloTotal}</span> termos</span>
-        ${poloCrit>0?`<span class="sf-polo-stat" style="color:var(--r)">⚠️ ${poloCrit} sem convênio</span>`:`<span class="sf-polo-stat" style="color:var(--g)">✓ todos com convênio</span>`}
+      <div class="sf-polo-meta">
+        <span>${poloSim}/${poloTotal} termos enviados</span>
+        <span>${nCursos} curso${nCursos!==1?'s':''}</span>
+        ${poloCrit>0
+          ?`<span style="color:var(--r)">⚠️ ${poloCrit} disciplina${poloCrit!==1?'s':''} sem convênio</span>`
+          :`<span style="color:var(--g)">✓ todos com convênio</span>`}
       </div>
-    </div>`;
+    </div>
+    <div class="sf-polo-body${poloAberto?' open':''}" id="body-${pid}">`;
 
+    // NÍVEL 2 — CURSOS
     Object.keys(areas).sort().forEach(area=>{
       Object.keys(areas[area]).sort().forEach(curso=>{
         const C=areas[area][curso];
@@ -1046,56 +1083,105 @@ function renderSemaforo(rows){
         const pct=C.total>0?Math.round(C.sim/C.total*100):0;
         const col=pct>=75?'#22c55e':pct>=40?'#FFD600':pct>0?'#f97316':'#ef4444';
         const areaLabel=AREA_SHORT[area]||area;
-
-        // Badges de convênio únicos para o curso
-        const convStatuses=[...new Set(Object.values(C.discs).map(d=>d.cv.status))];
-        let convSummary='';
-        if(C.semConv>0)convSummary+=`<span class="cb cb-r" style="font-size:8px">✗ ${C.semConv} sem conv.</span>`;
+        const nDiscs=Object.keys(C.discs).length;
+        // Resumo convênio do curso
         const comProprio=Object.values(C.discs).filter(d=>d.cv.status==='proprio').length;
         const comViz=Object.values(C.discs).filter(d=>d.cv.status==='vizinho').length;
-        if(comProprio>0)convSummary+=`<span class="cb cb-g" style="font-size:8px">✓ ${comProprio}</span>`;
-        if(comViz>0)convSummary+=`<span class="cb cb-b" style="font-size:8px">✓ compart. ${comViz}</span>`;
+        let convSummary='';
+        if(C.semConv>0) convSummary+=`<span class="cb cb-r" style="font-size:8px">✗ ${C.semConv} sem conv.</span>`;
+        if(comProprio>0) convSummary+=`<span class="cb cb-g" style="font-size:8px">✓ ${comProprio}</span>`;
+        if(comViz>0) convSummary+=`<span class="cb cb-b" style="font-size:8px">✓ ${comViz} compart.</span>`;
 
-        html+=`<div class="sf-curso-row" onclick="toggleCurso('${cid}')">
-          <div class="sf-curso-toggle" id="tog-${cid}">▶</div>
+        html+=`
+        <div class="sf-curso-row" onclick="sfToggle('${cid}')">
+          <div class="sf-curso-tog"><span id="tog-${cid}">▶</span></div>
           <div class="sf-curso-info">
             <div class="sf-curso-name">
               <span>${curso}</span>
-              <span style="font-size:9px;color:var(--tx3);font-weight:500">${areaLabel}</span>
+              <span style="font-size:9px;color:var(--tx3);font-weight:400">${areaLabel}</span>
               ${C.conf>0?`<span style="font-size:9px;color:var(--o);font-weight:600">🎓 ${C.conf} confirmado${C.conf!==1?'s':''}</span>`:''}
             </div>
             <div class="sf-curso-meta">
               <span>${C.total} aluno${C.total!==1?'s':''}</span>
               <span style="color:${col};font-weight:700">${pct}% enviaram</span>
-              <span>${C.sim} enviado${C.sim!==1?'s':''} · ${C.total-C.sim} pendente${(C.total-C.sim)!==1?'s':''}</span>
+              <span>${C.sim} ✓ · ${C.total-C.sim} pendente${(C.total-C.sim)!==1?'s':''}</span>
+              <span style="color:var(--tx3)">${nDiscs} disciplina${nDiscs!==1?'s':''}</span>
             </div>
           </div>
           <div class="sf-curso-badges">${convSummary}</div>
         </div>
-        <div class="sf-disc-block" id="disc-${cid}">`;
+        <div class="sf-curso-body" id="body-${cid}">`;
 
-        // Disciplinas
+        // NÍVEL 3 — DISCIPLINAS
         Object.keys(C.discs).sort().forEach(disc=>{
           const D=C.discs[disc];
           const cv=D.cv;
           const did='d'+(idCnt++);
           const dpct=D.total>0?Math.round(D.sim/D.total*100):0;
           const dcol=dpct>=100?'#22c55e':dpct>0?'#FFD600':'#ef4444';
-          html+=`<div class="sf-disc-row">
-            <div class="sf-disc-indent">└</div>
-            <div class="sf-disc-name" title="${disc}">${disc||'(disciplina geral)'}</div>
-            <div class="sf-disc-stats">
-              ${convBadge(cv)}
-              <span class="sn ${D.sim>0?'sn-g':'sn-x'}" title="Enviados">${D.sim}</span>
-              <span class="sn ${D.total-D.sim>0?'sn-r':'sn-x'}" title="Pendentes">${D.total-D.sim}</span>
-              ${D.conf>0?`<span class="sn sn-o" title="Confirmados">${D.conf}</span>`:''}
-              <button class="sf-disc-btn" onclick="event.stopPropagation();abrirDetalheDisc('${cid}','${encodeURIComponent(polo)}','${encodeURIComponent(curso)}','${encodeURIComponent(disc)}')">👥 Ver alunos</button>
+
+          html+=`
+          <div class="sf-disc-row" onclick="sfToggle('${did}')">
+            <div class="sf-disc-tog"><span id="tog-${did}">▶</span></div>
+            <div class="sf-disc-info">
+              <div class="sf-disc-name" title="${disc}">${disc||'(disciplina geral)'}</div>
+              <div class="sf-disc-meta">
+                <span>${D.total} aluno${D.total!==1?'s':''}</span>
+                <span style="color:${dcol};font-weight:600">${dpct}% enviaram</span>
+                ${D.conf>0?`<span style="color:var(--o)">🎓 ${D.conf} confirmado${D.conf!==1?'s':''}</span>`:''}
+              </div>
             </div>
+            <div class="sf-disc-right">
+              ${convBadge(cv)}
+              <span class="sn ${D.sim>0?'sn-g':'sn-x'}">${D.sim} ✓</span>
+              <span class="sn ${D.total-D.sim>0?'sn-r':'sn-x'}">${D.total-D.sim} pend.</span>
+            </div>
+          </div>
+          <div class="sf-disc-body" id="body-${did}">`;
+
+          // NÍVEL 4 — ALUNOS inline
+          // Bloco de convênio compacto no topo da lista de alunos
+          let convInfo='';
+          if(cv.status==='proprio'){
+            const vig=cv.info&&cv.info.venceEm6m?` <span style="color:var(--o)">⚠️ vence ${cv.info.vigFim}</span>`:'';
+            convInfo=`<div style="padding:7px 14px 7px 56px;font-size:10px;color:var(--tx3);border-bottom:1px solid var(--br);background:rgba(34,197,94,.04)">🤝 Convênio próprio firmado${cv.info?` · ${cv.info.vagas} vagas · ${cv.info.restantes} disponíveis`:''}${vig}</div>`;
+          }else if(cv.status==='vizinho'){
+            convInfo=`<div style="padding:7px 14px 7px 56px;font-size:10px;color:var(--tx3);border-bottom:1px solid var(--br);background:rgba(59,130,246,.04)">🤝 Convênio compartilhado com <strong style="color:#3b82f6">${cv.polo}</strong> — alunos podem usar os locais deste polo${cv.info?` · ${cv.info.vagas} vagas · ${cv.info.restantes} disponíveis`:''}${cv.info&&cv.info.venceEm6m?` <span style="color:var(--o)">⚠️ vence ${cv.info.vigFim}</span>`:''}</div>`;
+          }else{
+            convInfo=`<div style="padding:7px 14px 7px 56px;font-size:10px;color:var(--r);border-bottom:1px solid var(--br);background:rgba(239,68,68,.04)">⚠️ Sem convênio — polo precisa buscar local de estágio para esta disciplina</div>`;
+          }
+          html+=convInfo;
+
+          D.alunos.forEach((r,i)=>{
+            const termo=(r['Termo de Compromisso Enviado']||'').trim()==='Sim';
+            const conf=(r['Situação do Semestre']||'').trim()==='Matrícula Confirmada';
+            html+=`
+            <div class="sf-aluno-row">
+              <div class="sf-aluno-num">${i+1}</div>
+              <div class="sf-aluno-info">
+                <div class="sf-aluno-name">${r['Nome do Aluno']||'Aluno '+r['Matrícula']}</div>
+                <div class="sf-aluno-mat">Mat. ${r['Matrícula']||'—'} · Módulo ${r['Módulo']||'—'}</div>
+              </div>
+              <div class="sf-aluno-tags">
+                <span class="cb ${termo?'cb-g':'cb-r'}" style="font-size:9px">${termo?'✓ Termo enviado':'✗ Sem termo'}</span>
+                ${conf?`<span class="cb cb-o" style="font-size:9px">🎓 Confirmado</span>`:''}
+              </div>
+            </div>`;
+          });
+
+          // Botão exportar esta disciplina
+          html+=`<div style="padding:8px 14px 8px 56px;border-top:1px solid var(--br)">
+            <button onclick="event.stopPropagation();exportDiscAlunos('${encodeURIComponent(polo)}','${encodeURIComponent(curso)}','${encodeURIComponent(disc)}')" style="font-size:10px;font-weight:700;padding:5px 12px;border-radius:6px;background:rgba(255,214,0,.08);color:#FFD600;border:1px solid rgba(255,214,0,.2);font-family:Inter,sans-serif;transition:all .15s">⬇ Exportar lista desta disciplina</button>
           </div>`;
+
+          html+=`</div>`; // fecha sf-disc-body
         });
-        html+=`</div>`;
+
+        html+=`</div>`; // fecha sf-curso-body
       });
     });
+
+    html+=`</div>`; // fecha sf-polo-body
   });
 
   if(!html)html='<div style="padding:24px;text-align:center;color:var(--tx3)">Sem dados no filtro atual.</div>';
@@ -1103,12 +1189,17 @@ function renderSemaforo(rows){
   window._sfEst=est;
 }
 
+// Toggle genérico para os 3 níveis
+function sfToggle(id){
+  const body=document.getElementById('body-'+id);
+  const tog=document.getElementById('tog-'+id);
+  if(!body||!tog)return;
+  const open=body.classList.toggle('open');
+  tog.classList.toggle('open',open);
+}
+
 function toggleCurso(cid){
-  const disc=document.getElementById('disc-'+cid);
-  const tog=document.getElementById('tog-'+cid);
-  if(!disc||!tog)return;
-  const open=disc.classList.toggle('open');
-  tog.textContent=open?'▼':'▶';
+  sfToggle(cid);
 }
 
 // ══════ MODAL: DETALHE DISCIPLINA ══════
